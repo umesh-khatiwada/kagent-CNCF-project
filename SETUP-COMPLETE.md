@@ -141,11 +141,18 @@ kubectl apply -f manifests/
 
 Should complete without errors (05-a2a-services.yaml is backed up).
 
-### View agents
-kubectl get agents -n kagent
+### 3. Test A2A Configuration
+```bash
+# Check orchestrator A2A config
+kubectl get agent orchestrator-agent -n kagent -o yaml | grep -A 30 "a2aConfig"
+```
 
+### 4. Invoke Agents
+
+```bash
 # Invoke using CLI
-kagent invoke --agent orchestrator-agent --task "Perform a full cluster analysis" -o yaml | grep -A 30 "a2aConfig"
+kagent invoke --agent orchestrator-agent --task "Perform a full cluster analysis"
+```
 
 ## Usage Examples
 
