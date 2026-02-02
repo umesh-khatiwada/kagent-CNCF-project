@@ -32,28 +32,34 @@ kubectl get secret kagent-gemini -n kagent
 ```bash
 # With orchestrator (recommended for general queries)
 kubectl create -f - <<EOF
-apiVersion: kagent.dev/v1alpha2
-kind: ChatSession
-metadata:
-  name: my-session
-  namespace: kagent
-spec:
-  agent: orchestrator-agent
-  ttl: 3600
-EOF
+### 1. Using Kagent CLI
 
-# With specific agent
-kubectl create -f - <<EOF
-apiVersion: kagent.dev/v1alpha2
-kind: ChatSession
-metadata:
-  name: debug-session
-  namespace: kagent
-spec:
-  agent: k8s-debug-agent
-  ttl: 3600
-EOF
+Make sure you have port-forwarded the controller:
+```bash
+# In a separate terminal
+kubectl port-forward svc/kagent-controller 8083:8083 -n default
 ```
+
+Invoke an agent:
+```bash
+# Ask the orchestrator
+kagent invoke --agent orchestrator-agent --task "Perform a cluster health check"
+
+# Ask a specialist directly
+kagent invoke --agent k8s-debug-agent --task "List pods in kagent namespace"
+```
+
+### 2. Using the Dashboard
+
+Port-forward the UI service:
+```bash
+# In a separate terminal
+kubectl port-forward svc/kagent-ui 8080:8080 -n default
+```
+
+1. Open http://localhost:8080 in your browser
+2. Select an agent (e.g., `orchestrator-agent`)
+3. Type your message and send
 
 ### View Chat Sessions
 

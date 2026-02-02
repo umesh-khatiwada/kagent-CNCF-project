@@ -157,39 +157,16 @@ kubectl get modelconfig -n kagent
 
 Talk directly to the K8s Debug agent:
 ```bash
-# Create a chat session
-kubectl apply -f - <<EOF
-apiVersion: kagent.dev/v1alpha2
-kind: ChatSession
-metadata:
-  name: debug-session
-  namespace: kagent
-spec:
-  agent: k8s-debug-agent
-  ttl: 3600
-EOF
-
-# Send a message (example - actual API may vary)
-# Ask: "Why is the pod xyz in namespace abc crashing?"
+kagent invoke --agent k8s-debug-agent --task "Why is the pod xyz in namespace abc crashing?"
 ```
 
 ### Example 2: Comprehensive Health Check via Orchestrator
 
 The orchestrator coordinates multiple agents:
 ```bash
-# Create orchestrator session
-kubectl apply -f - <<EOF
-apiVersion: kagent.dev/v1alpha2
-kind: ChatSession
-metadata:
-  name: orchestrator-session
-  namespace: kagent
-spec:
-  agent: orchestrator-agent
-  ttl: 3600
-EOF
-
 # Ask: "Perform a comprehensive health check of my cluster"
+kagent invoke --agent orchestrator-agent --task "Perform a comprehensive health check of my cluster"
+
 # The orchestrator will:
 # 1. Call k8s-debug-service to check resources
 # 2. Call monitoring-service to check metrics
@@ -252,8 +229,9 @@ kubectl get agents -n kagent -o jsonpath='{range .items[*]}{.metadata.name}{"\n 
 
 3. **Test inter-agent communication**:
 ```bash
+```bash
 # Get the orchestrator session and send queries
-kubectl get chatsession -n kagent
+kagent invoke --agent orchestrator-agent --task "Hello"
 ```
 
 ## Directory Structure
