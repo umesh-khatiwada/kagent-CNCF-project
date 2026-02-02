@@ -58,33 +58,6 @@ spec:
             - k8sgetevents
       - type: McpServer
         mcpServer:
-          name: k8s-ops-mcp
-          kind: RemoteMCPServer
-          apiGroup: kagent.dev
-          toolNames:
-            - list_pods
-            - get_pod_logs
-            - get_pod_details
-            - list_services
-            - get_service_details
-            - list_deployments
-            - get_deployment_details
-            - list_nodes
-            - get_node_details
-            - list_namespaces
-            - list_events
-            - delete_pod
-      - type: McpServer
-        mcpServer:
-          name: utils-mcp
-          kind: RemoteMCPServer
-          apiGroup: kagent.dev
-          toolNames:
-            - base64_encode
-            - base64_decode
-            - json_format
-      - type: McpServer
-        mcpServer:
           name: k8s-mcp
           kind: RemoteMCPServer
           apiGroup: kagent.dev
@@ -92,11 +65,10 @@ spec:
             - list_pods
             - get_pod_logs
             - get_pod_details
-            - describe_pod
-            - list_deployments
-            - get_deployment_details
             - list_services
             - get_service_details
+            - list_deployments
+            - get_deployment_details
             - list_nodes
             - get_node_details
             - list_namespaces
@@ -106,8 +78,6 @@ spec:
             - get_configmap
             - list_secrets
             - get_secret
-            - kubectl_exec
-            - port_forward
     a2aConfig:
       skills:
         - id: diagnose-pod-issues
@@ -187,7 +157,6 @@ spec:
       Use monitoring tools to gather metrics and analyze system health.
       Focus on proactive detection and clear explanations.
     tools:
-
       - type: McpServer
         mcpServer:
           name: kagent-tool-server
@@ -195,6 +164,20 @@ spec:
           apiGroup: kagent.dev
           toolNames:
             - k8sgetresources
+            - k8sgetpodlogs
+            - k8sdescriberesource
+            - k8sgetevents
+      - type: McpServer
+        mcpServer:
+          name: k8s-mcp
+          kind: RemoteMCPServer
+          apiGroup: kagent.dev
+          toolNames:
+            - list_pods
+            - list_nodes
+            - get_node_details
+            - list_events
+            - get_events
     a2aConfig:
       skills:
         - id: analyze-metrics
@@ -263,7 +246,6 @@ spec:
       Use security tools to perform comprehensive assessments.
       Always prioritize security best practices and defense in depth.
     tools:
-
       - type: McpServer
         mcpServer:
           name: kagent-tool-server
@@ -272,6 +254,19 @@ spec:
           toolNames:
             - k8sgetresources
             - k8sdescriberesource
+            - k8sgetevents
+      - type: McpServer
+        mcpServer:
+          name: k8s-mcp
+          kind: RemoteMCPServer
+          apiGroup: kagent.dev
+          toolNames:
+            - list_pods
+            - list_namespaces
+            - list_events
+            - get_events
+            - list_configmaps
+            - list_secrets
     a2aConfig:
       skills:
         - id: security-scan

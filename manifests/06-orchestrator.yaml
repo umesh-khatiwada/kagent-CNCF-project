@@ -63,19 +63,26 @@ spec:
           kind: RemoteMCPServer
           apiGroup: kagent.dev
           toolNames:
-            - list_pods
-            - get_pod_details
-            - get_pod_logs
-            - describe_pod
-            - list_deployments
-            - get_deployment_details
-            - list_services
-            - get_service_details
             - k8sgetresources
             - k8sgetpodlogs
             - k8sdescriberesource
             - k8scheckserviceconnectivity
             - k8sgetevents
+      - type: McpServer
+        mcpServer:
+          name: k8s-mcp
+          kind: RemoteMCPServer
+          apiGroup: kagent.dev
+          toolNames:
+            - list_pods
+            - get_pod_details
+            - get_pod_logs
+            - list_deployments
+            - get_deployment_details
+            - list_services
+            - get_service_details
+            - list_events
+            - get_events
       # Agent-to-agent communication for complex coordination
       - type: Agent
         agent:

@@ -6,25 +6,7 @@ metadata:
   namespace: kagent
 spec:
   url: http://kagent-tools.default.svc.cluster.local:8084
-  description: Kubernetes operations and debugging tools
----
-apiVersion: kagent.dev/v1alpha2
-kind: RemoteMCPServer
-metadata:
-  name: monitoring-mcp-server
-  namespace: kagent
-spec:
-  url: http://monitoring-tools.kagent.svc.cluster.local:8080
-  description: Monitoring and metrics analysis tools
----
-apiVersion: kagent.dev/v1alpha2
-kind: RemoteMCPServer
-metadata:
-  name: security-mcp-server
-  namespace: kagent
-spec:
-  url: http://security-tools.kagent.svc.cluster.local:8080
-  description: Security scanning and compliance tools
+  description: Primary Kubernetes operations and debugging tools
 ---
 apiVersion: kagent.dev/v1alpha2
 kind: RemoteMCPServer
@@ -32,5 +14,5 @@ metadata:
   name: k8s-mcp
   namespace: kagent
 spec:
-  url: http://k8s-mcp.kagent.svc.cluster.local:8080
+  url: http://k8s-mcp.kagent.svc.cluster.local:8080/mcp
   description: Kubernetes debugging and operations MCP server
