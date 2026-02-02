@@ -123,12 +123,7 @@ spec:
       Use monitoring tools to gather metrics and analyze system health.
       Focus on proactive detection and clear explanations.
     tools:
-      - type: McpServer
-        mcpServer:
-          name: monitoring-mcp-server
-          kind: RemoteMCPServer
-          apiGroup: kagent.dev
-        # Allow all tools from monitoring server
+
       - type: McpServer
         mcpServer:
           name: kagent-tool-server
@@ -204,12 +199,7 @@ spec:
       Use security tools to perform comprehensive assessments.
       Always prioritize security best practices and defense in depth.
     tools:
-      - type: McpServer
-        mcpServer:
-          name: security-mcp-server
-          kind: RemoteMCPServer
-          apiGroup: kagent.dev
-        # Allow all tools from security server
+
       - type: McpServer
         mcpServer:
           name: kagent-tool-server
