@@ -11,7 +11,7 @@ spec:
   type: Declarative
   description: Main orchestrator agent that routes requests to specialized skill agents. Coordinates multi-agent workflows and aggregates responses.
   declarative:
-    modelConfig: default-model-config
+    modelConfig: llama3-model-config
     systemMessage: |
       You are an intelligent orchestrator agent that coordinates multiple specialized AI agents to solve complex Kubernetes operations tasks.
       

@@ -12,7 +12,7 @@ spec:
   type: Declarative
   description: Kubernetes debugging and troubleshooting specialist. Expert in diagnosing pod issues, analyzing logs, checking resource states, and cluster operations.
   declarative:
-    modelConfig: default-model-config
+    modelConfig: llama3-model-config
     systemMessage: |
       You are a Kubernetes debugging expert specializing in troubleshooting cluster issues.
       
@@ -102,7 +102,7 @@ spec:
   type: Declarative
   description: Monitoring and observability specialist. Expert in analyzing metrics, detecting anomalies, and providing insights on system health.
   declarative:
-    modelConfig: default-model-config
+    modelConfig: llama3-model-config
     systemMessage: |
       You are a monitoring and observability expert specializing in system health analysis.
       
@@ -175,7 +175,7 @@ spec:
   type: Declarative
   description: Security and compliance specialist. Expert in security scanning, RBAC analysis, policy enforcement, and vulnerability assessment.
   declarative:
-    modelConfig: default-model-config
+    modelConfig: llama3-model-config
     systemMessage: |
       You are a Kubernetes security expert specializing in cluster security and compliance.
       

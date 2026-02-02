@@ -1,0 +1,12 @@
+apiVersion: kagent.dev/v1alpha2
+kind: ModelConfig
+metadata:
+  name: llama3-model-config
+  namespace: kagent
+spec:
+  apiKeySecretKey: OPENAI_API_KEY
+  apiKeySecret: kagent-openai
+  model: llama3
+  provider: Ollama
+  ollama:
+    host: http://ollama.ollama.svc.cluster.local
