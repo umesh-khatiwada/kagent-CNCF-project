@@ -6,7 +6,7 @@ metadata:
 spec:
   apiKeySecretKey: OPENAI_API_KEY
   apiKeySecret: kagent-openai
-  model: llama3
+  model: cai_cybersecurity_agent_gguf_fixed
   provider: Ollama
   ollama:
-    host: http://ollama.ollama.svc.cluster.local
+    host: http://10.0.5.50:11435
