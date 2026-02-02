@@ -1,0 +1,250 @@
+---
+# Kubernetes Debug Agent - Specialist for K8s troubleshooting
+apiVersion: kagent.dev/v1alpha2
+kind: Agent
+metadata:
+  name: k8s-debug-agent
+  namespace: kagent
+  labels:
+    skill: kubernetes-debug
+    role: specialist
+spec:
+  type: Declarative
+  description: Kubernetes debugging and troubleshooting specialist. Expert in diagnosing pod issues, analyzing logs, checking resource states, and cluster operations.
+  declarative:
+    modelConfig: default-model-config
+    systemMessage: |
+      You are a Kubernetes debugging expert specializing in troubleshooting cluster issues.
+      
+      Your expertise includes:
+      - Diagnosing pod failures and crashes
+      - Analyzing container logs and events
+      - Checking resource states (deployments, services, configmaps, secrets)
+      - Investigating networking issues
+      - Examining resource usage and limits
+      - Understanding Kubernetes scheduling and placement
+      
+      When asked to troubleshoot:
+      1. Gather relevant information using available tools
+      2. Analyze the data systematically
+      3. Provide clear explanations of issues found
+      4. Suggest specific remediation steps
+      
+      Always use the Kubernetes tools available to you to inspect the cluster state.
+      Prefer kubectl-style operations for inspection and debugging.
+    tools:
+      - type: McpServer
+        mcpServer:
+          name: kagent-tool-server
+          kind: RemoteMCPServer
+          apiGroup: kagent.dev
+          toolNames:
+            - k8sgetresources
+            - k8sgetpodlogs
+            - k8sdescriberesource
+            - k8scheckserviceconnectivity
+            - k8sgetevents
+    a2aConfig:
+      skills:
+        - id: diagnose-pod-issues
+          name: Diagnose Pod Issues
+          description: Diagnose pod startup failures, crashes, or restart loops
+          inputModes:
+            - text
+          outputModes:
+            - text
+          tags:
+            - kubernetes
+            - debugging
+            - pods
+          examples:
+            - "Why is my pod crashing?"
+            - "Diagnose pod failures in namespace X"
+            - "Check why pods are in CrashLoopBackOff"
+        - id: analyze-logs
+          name: Analyze Logs
+          description: Analyze container logs to identify errors and issues
+          inputModes:
+            - text
+          outputModes:
+            - text
+          tags:
+            - kubernetes
+            - logs
+            - debugging
+          examples:
+            - "Show logs for pod X"
+            - "Analyze logs for errors in namespace Y"
+        - id: inspect-resources
+          name: Inspect Resources
+          description: Inspect Kubernetes resource states and configurations
+          inputModes:
+            - text
+          outputModes:
+            - text
+          tags:
+            - kubernetes
+            - resources
+          examples:
+            - "Check deployment status"
+            - "Inspect service configuration"
+---
+# Monitoring Agent - Specialist for metrics and observability
+apiVersion: kagent.dev/v1alpha2
+kind: Agent
+metadata:
+  name: monitoring-agent
+  namespace: kagent
+  labels:
+    skill: monitoring
+    role: specialist
+spec:
+  type: Declarative
+  description: Monitoring and observability specialist. Expert in analyzing metrics, detecting anomalies, and providing insights on system health.
+  declarative:
+    modelConfig: default-model-config
+    systemMessage: |
+      You are a monitoring and observability expert specializing in system health analysis.
+      
+      Your expertise includes:
+      - Analyzing resource utilization metrics (CPU, memory, disk, network)
+      - Detecting performance anomalies and trends
+      - Monitoring application health and availability
+      - Understanding service-level objectives (SLOs)
+      - Identifying resource bottlenecks
+      - Recommending scaling and optimization strategies
+      
+      When analyzing monitoring data:
+      1. Review current metrics and historical trends
+      2. Identify any anomalies or concerning patterns
+      3. Correlate metrics with application behavior
+      4. Provide actionable recommendations
+      
+      Use monitoring tools to gather metrics and analyze system health.
+      Focus on proactive detection and clear explanations.
+    tools:
+      - type: McpServer
+        mcpServer:
+          name: monitoring-mcp-server
+          kind: RemoteMCPServer
+          apiGroup: kagent.dev
+        # Allow all tools from monitoring server
+      - type: McpServer
+        mcpServer:
+          name: kagent-tool-server
+          kind: RemoteMCPServer
+          apiGroup: kagent.dev
+          toolNames:
+            - k8sgetresources
+    a2aConfig:
+      skills:
+        - id: analyze-metrics
+          name: Analyze Metrics
+          description: Analyze resource utilization metrics (CPU, memory, disk, network)
+          inputModes:
+            - text
+          outputModes:
+            - text
+          tags:
+            - monitoring
+            - metrics
+            - performance
+          examples:
+            - "Show CPU usage"
+            - "Analyze memory consumption"
+            - "Check resource utilization"
+        - id: health-check
+          name: Health Check
+          description: Perform comprehensive health checks on services and cluster
+          inputModes:
+            - text
+          outputModes:
+            - text
+          tags:
+            - monitoring
+            - health
+          examples:
+            - "Check cluster health"
+            - "Perform health check on application X"
+---
+# Security Agent - Specialist for security and compliance
+apiVersion: kagent.dev/v1alpha2
+kind: Agent
+metadata:
+  name: security-agent
+  namespace: kagent
+  labels:
+    skill: security
+    role: specialist
+spec:
+  type: Declarative
+  description: Security and compliance specialist. Expert in security scanning, RBAC analysis, policy enforcement, and vulnerability assessment.
+  declarative:
+    modelConfig: default-model-config
+    systemMessage: |
+      You are a Kubernetes security expert specializing in cluster security and compliance.
+      
+      Your expertise includes:
+      - Security scanning and vulnerability assessment
+      - RBAC (Role-Based Access Control) analysis
+      - Network policy evaluation
+      - Secret management and encryption
+      - Pod security standards and policies
+      - Compliance checking (CIS benchmarks, security best practices)
+      - Container image security
+      
+      When analyzing security:
+      1. Scan for known vulnerabilities and misconfigurations
+      2. Review RBAC permissions and access controls
+      3. Check network policies and segmentation
+      4. Validate security contexts and pod security standards
+      5. Identify security risks and their severity
+      6. Recommend specific security improvements
+      
+      Use security tools to perform comprehensive assessments.
+      Always prioritize security best practices and defense in depth.
+    tools:
+      - type: McpServer
+        mcpServer:
+          name: security-mcp-server
+          kind: RemoteMCPServer
+          apiGroup: kagent.dev
+        # Allow all tools from security server
+      - type: McpServer
+        mcpServer:
+          name: kagent-tool-server
+          kind: RemoteMCPServer
+          apiGroup: kagent.dev
+          toolNames:
+            - k8sgetresources
+            - k8sdescriberesource
+    a2aConfig:
+      skills:
+        - id: security-scan
+          name: Security Scan
+          description: Perform comprehensive security scans for vulnerabilities
+          inputModes:
+            - text
+          outputModes:
+            - text
+          tags:
+            - security
+            - vulnerabilities
+            - scanning
+          examples:
+            - "Scan for vulnerabilities"
+            - "Check security issues in cluster"
+        - id: rbac-analysis
+          name: RBAC Analysis
+          description: Analyze RBAC permissions and access controls
+          inputModes:
+            - text
+          outputModes:
+            - text
+          tags:
+            - security
+            - rbac
+            - permissions
+          examples:
+            - "Analyze RBAC permissions"
+            - "Check access controls for user X"

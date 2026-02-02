@@ -1,0 +1,82 @@
+---
+# Example A2A Client Configuration
+# This shows how to create a standalone client that calls agents via A2A protocol
+apiVersion: kagent.dev/v1alpha2
+kind: Agent
+metadata:
+  name: example-a2a-client
+  namespace: kagent
+  labels:
+    example: a2a-client
+spec:
+  type: Declarative
+  description: Example agent demonstrating how to use A2A protocol to call other agents
+  declarative:
+    modelConfig: default-model-config
+    systemMessage: |
+      You are a simple client agent that demonstrates A2A protocol usage.
+      
+      When you receive a request, you can:
+      1. Call the orchestrator-service for comprehensive analysis
+      2. Call specific skill services directly:
+         - k8s-debug-service for Kubernetes troubleshooting
+         - monitoring-service for metrics and performance
+         - security-service for security scans
+      
+      Example usage:
+      - "Get cluster health" → Call orchestrator-service with health-check skill
+      - "Check pod logs for app-xyz" → Call k8s-debug-service with analyze-logs skill
+    tools:
+      # A2A client to call the orchestrator
+      - type: A2AClient
+        a2aClient:
+          name: orchestrator-service
+          kind: A2AService
+          apiGroup: kagent.dev
+      # Or call specialist agents directly
+      - type: A2AClient
+        a2aClient:
+          name: k8s-debug-service
+          kind: A2AService
+          apiGroup: kagent.dev
+      - type: A2AClient
+        a2aClient:
+          name: monitoring-service
+          kind: A2AService
+          apiGroup: kagent.dev
+      - type: A2AClient
+        a2aClient:
+          name: security-service
+          kind: A2AService
+          apiGroup: kagent.dev
+---
+# Example: Testing A2A Communication
+# To test this agent:
+# 1. Deploy this manifest: kubectl apply -f example-a2a-client.yaml
+# 2. Create a ChatSession to interact with it
+# 3. Ask it to call other agents via A2A
+
+apiVersion: kagent.dev/v1alpha2
+kind: ChatSession
+metadata:
+  name: test-a2a-session
+  namespace: kagent
+spec:
+  agent: example-a2a-client
+  ttl: 3600 # Session expires after 1 hour
+---
+# After creating the ChatSession, you can send messages via kubectl:
+# kubectl patch chatsession test-a2a-session -n kagent --type=merge -p '
+# {
+#   "spec": {
+#     "messages": [
+#       {
+#         "role": "user",
+#         "content": "Please call the k8s-debug-service to check the status of all pods in the kagent namespace"
+#       }
+#     ]
+#   }
+# }'
+#
+# Then check the response:
+# kubectl get chatsession test-a2a-session -n kagent -o yaml

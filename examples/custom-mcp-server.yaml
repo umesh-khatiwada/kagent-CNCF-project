@@ -1,0 +1,184 @@
+---
+# Custom MCP Server Example
+# This shows how to create and deploy a custom MCP server that provides tools to agents
+
+# First, you need a service that implements the MCP protocol
+# The service should expose an HTTP endpoint that handles MCP requests
+
+# Example: Simple monitoring MCP server deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: custom-monitoring-mcp
+  namespace: kagent
+  labels:
+    app: custom-monitoring-mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: custom-monitoring-mcp
+  template:
+    metadata:
+      labels:
+        app: custom-monitoring-mcp
+    spec:
+      containers:
+      - name: mcp-server
+        # Replace with your actual MCP server image
+        image: your-registry/monitoring-mcp-server:latest
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: MCP_SERVER_PORT
+          value: "8080"
+        # Add any necessary environment variables
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+---
+# Service to expose the MCP server
+apiVersion: v1
+kind: Service
+metadata:
+  name: custom-monitoring-mcp
+  namespace: kagent
+  labels:
+    app: custom-monitoring-mcp
+spec:
+  selector:
+    app: custom-monitoring-mcp
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  type: ClusterIP
+---
+# Register the MCP server with kagent
+apiVersion: kagent.dev/v1alpha2
+kind: RemoteMCPServer
+metadata:
+  name: custom-monitoring-mcp
+  namespace: kagent
+spec:
+  url: http://custom-monitoring-mcp.kagent.svc.cluster.local:8080
+  description: Custom monitoring MCP server providing specialized monitoring tools
+  # Optional: Add authentication if your MCP server requires it
+  # auth:
+  #   type: bearer
+  #   secretRef:
+  #     name: mcp-auth-secret
+  #     key: token
+---
+# Use the custom MCP server in an agent
+apiVersion: kagent.dev/v1alpha2
+kind: Agent
+metadata:
+  name: custom-monitoring-agent
+  namespace: kagent
+spec:
+  type: Declarative
+  description: Agent using custom monitoring MCP server
+  declarative:
+    modelConfig: default-model-config
+    systemMessage: |
+      You are a monitoring agent with access to custom monitoring tools.
+      Use these tools to analyze system metrics and provide insights.
+    tools:
+      - type: McpServer
+        mcpServer:
+          name: custom-monitoring-mcp
+          kind: RemoteMCPServer
+          apiGroup: kagent.dev
+        # Option 1: Allow all tools from this server
+        # (leave toolNames empty)
+        
+        # Option 2: Specify specific tools
+        # toolNames:
+        #   - get_cpu_metrics
+        #   - get_memory_metrics
+        #   - analyze_performance
+
+---
+# MCP Server Implementation Example (Python pseudo-code)
+# Save this as a separate file and containerize it
+
+# """
+# example_mcp_server.py
+# 
+# A simple MCP server that provides monitoring tools
+# """
+# 
+# from fastapi import FastAPI
+# from pydantic import BaseModel
+# from typing import List, Dict, Any
+# 
+# app = FastAPI()
+# 
+# class Tool(BaseModel):
+#     name: str
+#     description: str
+#     inputSchema: Dict[str, Any]
+# 
+# class MCPRequest(BaseModel):
+#     tool: str
+#     arguments: Dict[str, Any]
+# 
+# # Define available tools
+# TOOLS = [
+#     Tool(
+#         name="get_cpu_metrics",
+#         description="Get CPU metrics for a namespace",
+#         inputSchema={
+#             "type": "object",
+#             "properties": {
+#                 "namespace": {"type": "string", "description": "Kubernetes namespace"}
+#             },
+#             "required": ["namespace"]
+#         }
+#     ),
+#     Tool(
+#         name="get_memory_metrics",
+#         description="Get memory metrics for a namespace",
+#         inputSchema={
+#             "type": "object",
+#             "properties": {
+#                 "namespace": {"type": "string", "description": "Kubernetes namespace"}
+#             },
+#             "required": ["namespace"]
+#         }
+#     )
+# ]
+# 
+# @app.get("/tools")
+# async def list_tools():
+#     """MCP endpoint to list available tools"""
+#     return {"tools": [tool.dict() for tool in TOOLS]}
+# 
+# @app.post("/execute")
+# async def execute_tool(request: MCPRequest):
+#     """MCP endpoint to execute a tool"""
+#     if request.tool == "get_cpu_metrics":
+#         namespace = request.arguments.get("namespace")
+#         # Implement actual metrics collection here
+#         return {
+#             "result": f"CPU metrics for namespace {namespace}: 45% average usage"
+#         }
+#     elif request.tool == "get_memory_metrics":
+#         namespace = request.arguments.get("namespace")
+#         # Implement actual metrics collection here
+#         return {
+#             "result": f"Memory metrics for namespace {namespace}: 2.3 GB used"
+#         }
+#     else:
+#         return {"error": f"Unknown tool: {request.tool}"}
+# 
+# if __name__ == "__main__":
+#     import uvicorn
+#     uvicorn.run(app, host="0.0.0.0", port=8080)
