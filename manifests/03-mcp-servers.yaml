@@ -25,3 +25,12 @@ metadata:
 spec:
   url: http://security-tools.kagent.svc.cluster.local:8080
   description: Security scanning and compliance tools
+---
+apiVersion: kagent.dev/v1alpha2
+kind: RemoteMCPServer
+metadata:
+  name: k8s-mcp
+  namespace: kagent
+spec:
+  url: http://k8s-mcp.kagent.svc.cluster.local:8080
+  description: Kubernetes debugging and operations MCP server

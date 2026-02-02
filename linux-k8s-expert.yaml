@@ -21,3 +21,8 @@ spec:
         - k8sgetpodlogs
         - k8sdescriberesource
         - k8scheckserviceconnectivity
+    - type: McpServer
+      mcpServer:
+        name: k8s-mcp
+        kind: RemoteMCPServer
+        apiGroup: kagent.dev
