@@ -1,0 +1,135 @@
+---
+# RBAC for k8s-ops-mcp
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: k8s-ops-sa
+  namespace: kagent
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kagent-mcp-ops-role
+rules:
+- apiGroups: [""]
+  resources: ["pods", "pods/log", "namespaces", "services", "events", "nodes"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kagent-mcp-ops-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kagent-mcp-ops-role
+subjects:
+- kind: ServiceAccount
+  name: k8s-ops-sa
+  namespace: kagent
+---
+# K8s Ops MCP Server Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-ops-mcp
+  namespace: kagent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: k8s-ops-mcp
+  template:
+    metadata:
+      labels:
+        app: k8s-ops-mcp
+    spec:
+      serviceAccountName: k8s-ops-sa
+      containers:
+      - name: mcp-server
+        image: ghcr.io/flux159/mcp-server-kubernetes:3.0.3
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        env:
+        - name: PORT
+          value: "8080"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8s-ops-mcp
+  namespace: kagent
+spec:
+  selector:
+    app: k8s-ops-mcp
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: http
+---
+# Utils MCP Server Deployment (keeping our custom one)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: utils-mcp
+  namespace: kagent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: utils-mcp
+  template:
+    metadata:
+      labels:
+        app: utils-mcp
+    spec:
+      containers:
+      - name: mcp-server
+        image: utils-mcp:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8081
+        env:
+        - name: UVICORN_HOST
+          value: "0.0.0.0"
+        - name: UVICORN_PORT
+          value: "8081"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: utils-mcp
+  namespace: kagent
+spec:
+  selector:
+    app: utils-mcp
+  ports:
+  - port: 8081
+    targetPort: 8081
+    name: http
+---
+# --- Register MCP Servers ---
+apiVersion: kagent.dev/v1alpha2
+kind: RemoteMCPServer
+metadata:
+  name: k8s-ops-mcp
+  namespace: kagent
+spec:
+  url: http://k8s-ops-mcp.kagent.svc.cluster.local:8080
+  description: Kubernetes operations tools (list pods, get logs)
+---
+apiVersion: kagent.dev/v1alpha2
+kind: RemoteMCPServer
+metadata:
+  name: utils-mcp
+  namespace: kagent
+spec:
+  url: http://utils-mcp.kagent.svc.cluster.local:8081
+  description: Utility tools (base64, json formatting)
