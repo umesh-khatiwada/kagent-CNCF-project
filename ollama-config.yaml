@@ -7,6 +7,6 @@ spec:
   apiKeySecretKey: OPENAI_API_KEY
   apiKeySecret: kagent-openai
   model: cai_cybersecurity_agent_gguf_fixed
-  provider: Ollama
-  ollama:
-    host: http://10.0.5.50:11435
+  provider: OpenAI
+  openAI:
+    baseUrl: http://10.0.5.50:1234/v1
