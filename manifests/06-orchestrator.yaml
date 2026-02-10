@@ -35,29 +35,6 @@ spec:
       **Example**: If asked to "get me pod list", you should delegate to `k8s-debug-agent` or `cluster-admin-agent` using their skills, or if it's very simple, use your `pods_list` tool then explain you are coordinating. But for "why is pod X failing", you MUST call `k8s-debug-agent`.
     tools:
       # Direct access to K8s tools - use only proven working servers
-      - type: McpServer
-        mcpServer:
-          name: kagent-tool-server
-          kind: RemoteMCPServer
-          apiGroup: kagent.dev
-          toolNames:
-            - k8s_get_resources
-            - k8s_get_pod_logs
-            - k8s_describe_resource
-            - k8s_check_service_connectivity
-            - k8s_get_events
-      - type: McpServer
-        mcpServer:
-          name: k8s-mcp
-          kind: RemoteMCPServer
-          apiGroup: kagent.dev
-          toolNames:
-            - pods_list
-            - pods_get
-            - pods_log
-            - resources_list
-            - resources_get
-            - events_list
       # Agent-to-agent communication for complex coordination
       - type: Agent
         agent:

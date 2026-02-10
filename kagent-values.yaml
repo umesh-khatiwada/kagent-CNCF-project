@@ -1,0 +1,21 @@
+agents:
+  argo-rollouts-agent:
+    enabled: false
+  cilium-debug-agent:
+    enabled: false
+  cilium-manager-agent:
+    enabled: false
+  cilium-policy-agent:
+    enabled: false
+  helm-agent:
+    enabled: false
+  istio-agent:
+    enabled: false
+  k8s-agent:
+    enabled: false
+  kgateway-agent:
+    enabled: false
+  observability-agent:
+    enabled: false
+  promql-agent:
+    enabled: false

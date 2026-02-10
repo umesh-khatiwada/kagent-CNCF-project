@@ -2,7 +2,7 @@
 set -e
 
 # Set KUBECONFIG
-export KUBECONFIG=/home/umesh-bb/Desktop/kubeconfig/k3s.yaml
+export KUBECONFIG=/home/umesh-pc/Desktop/kubeconfig/k3s.yaml
 
 # Check if kubectl is available
 if ! command -v kubectl &> /dev/null; then

@@ -325,3 +325,12 @@ Add more capabilities:
 ## License
 
 This setup is provided as-is for demonstration purposes.
+
+helm upgrade --install kagent oci://ghcr.io/kagent-dev/kagent/helm/kagent -n kagent \
+      --set providers.default=openAI \
+      --set providers.openAI.apiKey=$API_KEY \
+      --set providers.openAI.model=deepseek-chat \
+      --set providers.openAI.baseUrl=https://api.deepseek.com/v1
+
+
+    
