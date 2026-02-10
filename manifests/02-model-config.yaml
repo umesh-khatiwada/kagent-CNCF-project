@@ -1,11 +1,12 @@
 apiVersion: kagent.dev/v1alpha2
 kind: ModelConfig
 metadata:
-  name: default-model-config
+  name: llama3-model-config
   namespace: kagent
 spec:
-  provider: Gemini
-  model: gemini-3-flash-preview
-  apiKeySecret: kagent-gemini
-  apiKeySecretKey: GOOGLE_API_KEY
-  gemini: {}
+  apiKeySecretKey: OPENAI_API_KEY
+  apiKeySecret: kagent-openai
+  model: deepseek-chat
+  provider: OpenAI
+  openAI:
+    baseUrl: https://api.deepseek.com/v1
