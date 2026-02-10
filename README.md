@@ -1,11 +1,11 @@
 # Kagent Multi-Agent Setup with A2A and MCP
 
-Complete kagent setup for the `kind-kagent-demo` cluster featuring:
-- 🤖 Multiple specialized AI agents using Gemini
+Complete kagent setup for the **k3s cluster** featuring:
+- 🤖 Multiple specialized AI agents using **DeepSeek** (via OpenAI)
 - 🔄 Agent-to-Agent (A2A) communication
-- 🎯 Orchestrator pattern for task delegation
+- 🎯 Orchestrator pattern with prioritized delegation
 - 🔧 MCP (Model Context Protocol) integration
-- 📊 Comprehensive examples and documentation
+- 📂 Advanced **Cluster Admin Agent** for full CRUD operations
 
 ## Architecture
 
@@ -71,7 +71,17 @@ Complete kagent setup for the `kind-kagent-demo` cluster featuring:
 - Pod security standards validation
 - Compliance auditing
 
-**Tools**: Security MCP server + K8s MCP server
+**Tools**: k8s-mcp (`pods_list`, `pods_log`, `resources_list`, etc.)
+**A2A Service**: Configured in Agent spec
+
+#### ⚒️ Cluster Admin Agent (`cluster-admin-agent`)
+**Purpose**: Advanced Kubernetes administrator
+- Full CRUD operations (Create, Update, Get, Delete)
+- Scaling and lifecycle management
+- Helm release management
+- System-wide resource operations
+
+**Tools**: Full administrative toolset from `k8s-mcp` and `kagent-tool-server`
 **A2A Service**: Configured in Agent spec
 
 ### 2. Orchestrator Agent
@@ -106,35 +116,25 @@ Agent-to-Agent (A2A) protocol enables:
 
 ### Prerequisites
 
-1. Kind cluster named `kind-kagent-demo` (already exists)
-2. Kagent CRDs and controller installed
-3. Gemini API key
+1. K3s cluster accessible (e.g., at `134.199.198.40`)
+2. Kubeconfig file (e.g., `~/Desktop/kubeconfig/k3s.yaml`)
+3. DeepSeek API key (configured via `kagent-openai` secret)
 
 ### Installation
 
-1. **Create the Gemini API secret**:
-```bash
-cd /home/umesh-bb/Desktop/kagent
-source keys.txt
+1. **Verify KUBECONFIG**:
+   Ensure `export KUBECONFIG=/home/umesh-bb/Desktop/kubeconfig/k3s.yaml` is set.
 
-# The secret is already created, but if needed:
-kubectl create secret generic kagent-gemini \
-  -n kagent \
-  --from-literal=GOOGLE_API_KEY=$GOOGLE_API_KEY
-```
+2. **Deploy using the provided script**:
+   ```bash
+   chmod +x deploy-kagent.sh
+   ./deploy-kagent.sh
+   ```
 
-2. **Deploy all manifests**:
-```bash
-# Apply in order
-kubectl apply -f manifests/00-namespace.yaml
-kubectl apply -f manifests/02-model-config.yaml
-kubectl apply -f manifests/03-mcp-servers.yaml
-kubectl apply -f manifests/04-skill-agents.yaml
-kubectl apply -f manifests/06-orchestrator.yaml
-
-# Or apply all at once
-kubectl apply -f manifests/
-```
+3. **Or apply manifests manually**:
+   ```bash
+   kubectl apply -f manifests/
+   ```
 
 3. **Verify deployment**:
 ```bash

@@ -13,7 +13,7 @@ kubectl get modelconfig -n kagent
 kubectl get remotemcpserver -n kagent
 
 # View secrets
-kubectl get secret kagent-gemini -n kagent
+kubectl get secret kagent-openai -n kagent
 ```
 
 ## Deployed Agents
@@ -24,6 +24,7 @@ kubectl get secret kagent-gemini -n kagent
 | `k8s-debug-agent` | K8s debugging | `kubectl describe agent k8s-debug-agent -n kagent` |
 | `monitoring-agent` | Monitoring | `kubectl describe agent monitoring-agent -n kagent` |
 | `security-agent` | Security | `kubectl describe agent security-agent -n kagent` |
+| `cluster-admin-agent` | Cluster Admin | `kubectl describe agent cluster-admin-agent -n kagent` |
 
 ## Common Commands
 
