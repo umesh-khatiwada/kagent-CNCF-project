@@ -37,6 +37,7 @@ kubectl apply -f manifests/03-mcp-servers.yaml
 kubectl apply -f manifests/04-skill-agents.yaml
 kubectl apply -f manifests/05-k8s-mcp-deployment.yaml
 kubectl apply -f manifests/06-orchestrator.yaml
+kubectl apply -f manifests/08-cluster-admin-agent.yaml
 
 echo "Deployment complete!"
 kubectl get agents -n kagent

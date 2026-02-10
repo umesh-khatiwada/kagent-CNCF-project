@@ -1,0 +1,109 @@
+---
+# Cluster Admin Agent - Advanced agent for full K8s management
+apiVersion: kagent.dev/v1alpha2
+kind: Agent
+metadata:
+  name: cluster-admin-agent
+  namespace: kagent
+  labels:
+    skill: cluster-admin
+    role: expert
+spec:
+  type: Declarative
+  description: Advanced Kubernetes Cluster Administrator. Expert in managing the full lifecycle of any Kubernetes resource, including creation, updates, scaling, and deletion across all namespaces.
+  declarative:
+    modelConfig: llama3-model-config
+    systemMessage: |
+      You are an Advanced Kubernetes Cluster Administrator expert.
+      
+      You have full authority and permissions to manage any resource in the Kubernetes cluster. 
+      Your expertise covers:
+      - Creating and updating all types of resources (Pods, Deployments, Services, ConfigMaps, Secrets, Ingress, etc.)
+      - Deleting resources and performing cleanup operations
+      - Scaling workloads and managing replicas
+      - Executing commands in containers for deep debugging or maintenance
+      - Managing Helm releases (install, upgrade, uninstall)
+      - Inspecting system-wide status and cluster configuration
+      
+      ## Guidelines:
+      1. **Full Lifecycle**: When asked to "deploy" or "set up" something, you should create all necessary manifests and apply them.
+      2. **Destructive Actions**: You are authorized to carry out deletion and cleanup tasks when requested.
+      3. **System-wide Scope**: You operate across all namespaces.
+      4. **Tool Selection**: Use `resources_create_or_update` or `k8s_apply_manifest` for complex setups, and specific tools like `pods_run` or `k8s_scale` for quick actions.
+      
+      Always verify the current state of a resource before applying changes.
+      When asked to do "everything" or "full operations", use your comprehensive toolset proactively.
+    tools:
+      - type: McpServer
+        mcpServer:
+          name: kagent-tool-server
+          kind: RemoteMCPServer
+          apiGroup: kagent.dev
+          toolNames:
+            - k8s_get_resources
+            - k8s_get_pod_logs
+            - k8s_describe_resource
+            - k8s_check_service_connectivity
+            - k8s_get_events
+            - k8s_apply_manifest
+            - k8s_create_resource
+            - k8s_delete_resource
+            - k8s_execute_command
+            - k8s_scale
+            - shell
+      - type: McpServer
+        mcpServer:
+          name: k8s-mcp
+          kind: RemoteMCPServer
+          apiGroup: kagent.dev
+          toolNames:
+            - pods_list
+            - pods_log
+            - pods_get
+            - pods_delete
+            - pods_exec
+            - pods_run
+            - pods_top
+            - resources_create_or_update
+            - resources_delete
+            - resources_get
+            - resources_list
+            - resources_scale
+            - helm_install
+            - helm_list
+            - helm_uninstall
+            - namespaces_list
+            - events_list
+    a2aConfig:
+      skills:
+        - id: cluster-management
+          name: Cluster Management
+          description: Perform full lifecycle management (CRUD) of any Kubernetes resource
+          inputModes:
+            - text
+          outputModes:
+            - text
+          tags:
+            - kubernetes
+            - admin
+            - crud
+          examples:
+            - "Deploy a new nginx application in namespace test"
+            - "Delete all pods in namespace dev with label app=old"
+            - "Scale deployment my-app to 5 replicas"
+            - "Update the configmap my-config with new data"
+        - id: system-operations
+          name: System Operations
+          description: Perform advanced system operations like helm management and pod execution
+          inputModes:
+            - text
+          outputModes:
+            - text
+          tags:
+            - kubernetes
+            - operations
+            - helm
+          examples:
+            - "Uninstall helm release redis"
+            - "Execute 'ls -l' in pod my-pod"
+            - "Show cluster-wide resource usage"
