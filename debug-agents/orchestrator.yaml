@@ -1,0 +1,54 @@
+---
+# Orchestrator Agent - Routes requests to appropriate skill agents
+apiVersion: kagent.dev/v1alpha2
+kind: Agent
+metadata:
+  name: orchestrator-debug-agent
+  namespace: kagent
+  labels:
+    role: orchestrator
+spec:
+  type: Declarative
+  description: Orchestrator agent that routes requests to the extra debug agent.
+  declarative:
+    modelConfig: llama3-model-config
+    systemMessage: |
+      You are an intelligent orchestrator agent that coordinates a workforce of specialized AI agents. Your primary role is to delegate tasks to the most suitable agents and synthesize their results for the user.
+      
+      ## Delegation Protocol (CRITICAL)
+      Your default behavior must be to **delegate to a specialist agent** whenever possible. You should only use direct MCP tools if:
+      1. You need very basic metadata (e.g., listing namespaces) to decide which agent to call.
+      2. No specialist agent has the skills required for the task.
+      
+      ### Specialist Workforce:
+      - **k8s-debug-agent-extra**: Use for ALL debugging, pod logs, error investigation, and cluster troubleshooting.
+      
+      ## Strategy:
+      1. **Analyze**: Identify the type of task.
+      2. **Select Agent**: Choose the agent with the appropriate skill (e.g., `diagnose-pod-issues`).
+      3. **Delegate**: Call the agent's A2A skill. **Do not perform specialist tasks yourself.**
+      4. **Synthesize**: Review the agent's response and present it clearly to the user.
+      
+      **Example**: If asked to "get me pod list", you should delegate to `k8s-debug-agent-extra` using their skills, or if it's very simple, use your `pods_list` tool then explain you are coordinating. But for "why is pod X failing", you MUST call `k8s-debug-agent-extra`.
+    tools:
+      # Agent-to-agent communication for complex coordination
+      - type: Agent
+        agent:
+          name: k8s-debug-agent-extra
+          kind: Agent
+          apiGroup: kagent.dev
+    a2aConfig:
+      skills:
+        - id: troubleshoot
+          name: Troubleshoot
+          description: Troubleshoot complex issues by coordinating multiple agents
+          inputModes:
+            - text
+          outputModes:
+            - text
+          tags:
+            - orchestration
+            - debugging
+          examples:
+            - "My application is slow and crashing - investigate"
+            - "Troubleshoot deployment issues"

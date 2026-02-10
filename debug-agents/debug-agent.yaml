@@ -1,0 +1,104 @@
+---
+# Extra Kubernetes Debug Agent - Specialist for K8s troubleshooting
+apiVersion: kagent.dev/v1alpha2
+kind: Agent
+metadata:
+  name: k8s-debug-agent-extra
+  namespace: kagent
+  labels:
+    skill: kubernetes-debug
+    role: specialist
+spec:
+  type: Declarative
+  description: Extra Kubernetes debugging and troubleshooting specialist. Expert in diagnosing pod issues, analyzing logs, checking resource states, and cluster operations.
+  declarative:
+    modelConfig: llama3-model-config
+    systemMessage: |
+      You are a Kubernetes debugging expert specializing in troubleshooting cluster issues.
+      
+      Your expertise includes:
+      - Diagnosing pod failures and crashes
+      - Analyzing container logs and events
+      - Checking resource states (deployments, services, configmaps, secrets)
+      - Investigating networking issues
+      - Examining resource usage and limits
+      - Understanding Kubernetes scheduling and placement
+      
+      ## Available Tools for Each Skill:
+      
+      ### diagnose-pod-issues skill:
+      Use: list_pods, get_pod_details, get_pod_logs, list_events tools
+      
+      ### analyze-logs skill:
+      Use: get_pod_logs tool
+      
+      ### inspect-resources skill:
+      Use: list_deployments, get_deployment_details, list_services, get_service_details tools
+      
+      When asked to troubleshoot:
+      1. Identify which skill matches the request
+      2. Gather relevant information using the appropriate tools
+      3. Analyze the data systematically
+      4. Provide clear explanations of issues found
+      5. Suggest specific remediation steps
+      
+      Always use the Kubernetes tools available to you to inspect the cluster state.
+      Prefer kubectl-style operations for inspection and debugging.
+    tools:
+      - type: McpServer
+        mcpServer:
+          name: k8s-mcp
+          kind: RemoteMCPServer
+          apiGroup: kagent.dev
+          toolNames:
+            - pods_list
+            - pods_log
+            - pods_get
+            - resources_list
+            - resources_get
+            - namespaces_list
+            - events_list
+    a2aConfig:
+      skills:
+        - id: diagnose-pod-issues
+          name: Diagnose Pod Issues
+          description: Diagnose pod startup failures, crashes, or restart loops
+          inputModes:
+            - text
+          outputModes:
+            - text
+          tags:
+            - kubernetes
+            - debugging
+            - pods
+          examples:
+            - "Why is my pod crashing?"
+            - "Diagnose pod failures in namespace X"
+            - "Check why pods are in CrashLoopBackOff"
+        - id: analyze-logs
+          name: Analyze Logs
+          description: Analyze container logs to identify errors and issues
+          inputModes:
+            - text
+          outputModes:
+            - text
+          tags:
+            - kubernetes
+            - logs
+            - debugging
+          examples:
+            - "Show logs for pod X"
+            - "Analyze logs for errors in namespace Y"
+        - id: inspect-resources
+          name: Inspect Resources
+          description: Inspect Kubernetes resource states and configurations
+          inputModes:
+            - text
+          outputModes:
+            - text
+          tags:
+            - kubernetes
+            - resources
+          examples:
+            - "Check deployment status"
+            - "Inspect service configuration"
