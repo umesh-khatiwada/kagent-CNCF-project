@@ -1,11 +1,27 @@
 # Kagent Multi-Agent Setup with A2A and MCP
 
-Complete kagent setup for the **k3s cluster** featuring:
+A [kagent](https://kagent.dev) setup of specialised Kubernetes AI agents with an orchestrator, Agent-to-Agent (A2A) delegation and MCP tool servers, deployable on a k3s or Kind cluster. Features:
 - 🤖 Multiple specialized AI agents using **DeepSeek** (via OpenAI)
 - 🔄 Agent-to-Agent (A2A) communication
 - 🎯 Orchestrator pattern with prioritized delegation
 - 🔧 MCP (Model Context Protocol) integration
 - 📂 Advanced **Cluster Admin Agent** for full CRUD operations
+
+## Table of Contents
+
+- [Architecture](#architecture)
+- [Components](#components)
+- [Quick Start](#quick-start)
+- [Usage Examples](#usage-examples)
+- [Configuration](#configuration)
+- [Testing A2A Communication](#testing-a2a-communication)
+- [Repository Structure](#directory-structure)
+- [Troubleshooting](#troubleshooting)
+- [Advanced Usage](#advanced-usage)
+- [Security Notes](#security-notes)
+- [Resources](#resources)
+- [License](#license)
+- [Author](#author)
 
 ## Architecture
 
@@ -30,12 +46,15 @@ Complete kagent setup for the **k3s cluster** featuring:
     └───┬────┘    └─────┬──────┘   └────┬─────┘
         │               │               │
         ▼               ▼               ▼
-    ┌────────┐    ┌────────────┐   ┌──────────┐
-    │  K8s   │    │ Monitoring │   │ Security │
-    │  MCP   │    │    MCP     │   │   MCP    │
-    │ Server │    │   Server   │   │  Server  │
-    └────────┘    └────────────┘   └──────────┘
+         └───────────────┼───────────────┘
+                         ▼
+          ┌──────────────────────────────┐
+          │ MCP servers: kagent-tool-    │
+          │ server and k8s-mcp           │
+          └──────────────────────────────┘
 ```
+
+The orchestrator also delegates to `cluster-admin-agent` (see `manifests/06-orchestrator.yaml`). All agents use the `kagent-tool-server` and `k8s-mcp` RemoteMCPServers (`manifests/03-mcp-servers.yaml`).
 
 ## Components
 
@@ -60,7 +79,7 @@ Complete kagent setup for the **k3s cluster** featuring:
 - Recommend optimization strategies
 - Trend analysis
 
-**Tools**: Monitoring MCP server + K8s MCP server
+**Tools**: `kagent-tool-server` and `k8s-mcp`
 **A2A Service**: Configured in Agent spec
 
 #### 🔒 Security Agent (`security-agent`)
@@ -100,9 +119,10 @@ Complete kagent setup for the **k3s cluster** featuring:
 ### 3. MCP Servers
 
 MCP (Model Context Protocol) servers provide tools that agents can use:
-- **kagent-tool-server**: Kubernetes operations (kubectl)
-- **monitoring-mcp-server**: Metrics and performance tools
-- **security-mcp-server**: Security scanning tools
+- **kagent-tool-server**: kagent tool server (`http://kagent-tools.kagent.svc.cluster.local:8084`)
+- **k8s-mcp**: Kubernetes MCP server, deployed from `manifests/05-k8s-mcp-deployment.yaml`
+
+(No separate monitoring or security MCP servers are defined in the manifests.)
 
 ### 4. A2A Protocol
 
@@ -116,27 +136,44 @@ Agent-to-Agent (A2A) protocol enables:
 
 ### Prerequisites
 
-1. K3s cluster accessible (e.g., at `134.199.198.40`)
-2. Kubeconfig file (e.g., `~/Desktop/kubeconfig/k3s.yaml`)
-3. DeepSeek API key (configured via `kagent-openai` secret)
+- A Kubernetes cluster (k3s, or a local Kind cluster created by `setup.sh`), `kubectl`, `helm`
+- For `setup.sh`: `docker`, `kind`, `curl`
+- An OpenAI-compatible API key (the manifests use DeepSeek via `https://api.deepseek.com/v1`, model `deepseek-chat`), or a Google API key for Gemini (supported by `setup.sh`)
 
-### Installation
+### Option A: Automated (Kind) with `setup.sh`
 
-1. **Verify KUBECONFIG**:
-   Ensure `export KUBECONFIG=/home/umesh-bb/Desktop/kubeconfig/k3s.yaml` is set.
+```bash
+chmod +x setup.sh
+export OPENAI_API_KEY=<your-api-key>   # or GOOGLE_API_KEY; otherwise you are prompted
+./setup.sh
+```
 
-2. **Deploy using the provided script**:
-   ```bash
-   chmod +x deploy-kagent.sh
-   ./deploy-kagent.sh
-   ```
+The script creates a Kind cluster `kind-kagent-demo`, installs the kagent CLI, the `kagent-crds` and `kagent` Helm charts (using `kagent-values.yaml`, which disables the built-in agents) and applies `manifests/`. Then:
 
-3. **Or apply manifests manually**:
-   ```bash
-   kubectl apply -f manifests/
-   ```
+```bash
+kubectl port-forward -n kagent svc/kagent-ui 8080:8080   # open http://localhost:8080
+```
 
-3. **Verify deployment**:
+### Option B: Existing cluster with `deploy-kagent.sh`
+
+1. Install kagent via Helm first (with the API key; see the `helm upgrade --install kagent oci://ghcr.io/kagent-dev/kagent/helm/kagent ...` command in `setup.sh`) so the `kagent-openai` secret exists.
+2. Point `KUBECONFIG` at your cluster. `deploy-kagent.sh` and `export-kubeconfig.sh` hard-code a local kubeconfig path; edit it for your machine.
+3. Run:
+
+```bash
+chmod +x deploy-kagent.sh
+./deploy-kagent.sh
+```
+
+It creates the `kagent` namespace, a `host-kubeconfig` secret from your kubeconfig, and applies the manifests in `manifests/`.
+
+Or apply the manifests manually (the API key secret must already exist):
+
+```bash
+kubectl apply -f manifests/
+```
+
+### Verify deployment:
 ```bash
 # Check all agents
 kubectl get agents -n kagent
@@ -191,10 +228,8 @@ See `examples/custom-mcp-server.yaml` for:
 ### Model Configuration
 
 Edit `manifests/02-model-config.yaml` to change:
-- Model version (currently `gemini-2.0-flash-exp`)
-- Temperature
-- Max output tokens
-- Other Gemini-specific settings
+- Model (currently `deepseek-chat`, provider `OpenAI`, base URL `https://api.deepseek.com/v1`)
+- The ModelConfig is named `llama3-model-config` and reads the key from secret `kagent-openai` (`OPENAI_API_KEY`)
 
 ### Agent System Messages
 
@@ -205,8 +240,6 @@ Each agent has a detailed system message defining its:
 - Communication style
 
 Edit the agent manifests in `manifests/04-skill-agents.yaml` and `manifests/06-orchestrator.yaml`.
-
-### A2A Skills
 
 ### A2A Skills
 
@@ -229,7 +262,6 @@ kubectl get agents -n kagent -o jsonpath='{range .items[*]}{.metadata.name}{"\n 
 
 3. **Test inter-agent communication**:
 ```bash
-```bash
 # Get the orchestrator session and send queries
 kagent invoke --agent orchestrator-agent --task "Hello"
 ```
@@ -237,18 +269,25 @@ kagent invoke --agent orchestrator-agent --task "Hello"
 ## Directory Structure
 
 ```
-/home/umesh-bb/Desktop/kagent/
+.
+├── README.md
+├── QUICKSTART.md                     # Command cheat sheet
+├── docs/A2A-IMPLEMENTATION.md        # How A2A is configured via a2aConfig
+├── setup.sh                          # Kind + Helm + manifests automation
+├── deploy-kagent.sh                  # Apply manifests to an existing cluster
+├── export-kubeconfig.sh              # Sets KUBECONFIG (edit the path)
+├── kagent-values.yaml                # Helm values (disables built-in agents)
 ├── manifests/
-│   ├── 00-namespace.yaml          # Namespace definition
-│   ├── 02-model-config.yaml       # Gemini model configuration
-│   ├── 03-mcp-servers.yaml        # MCP server registrations
-│   ├── 04-skill-agents.yaml       # Specialized skill agents
-│   └── 06-orchestrator.yaml       # Orchestrator agent
-├── examples/
-│   ├── a2a-client-example.yaml    # A2A client example
-│   └── custom-mcp-server.yaml     # Custom MCP server example
-├── keys.txt                        # API keys (gitignored)
-└── README.md                       # This file
+│   ├── 00-namespace.yaml             # kagent namespace
+│   ├── 02-model-config.yaml          # ModelConfig (deepseek-chat via OpenAI provider)
+│   ├── 03-mcp-servers.yaml           # RemoteMCPServers: kagent-tool-server, k8s-mcp
+│   ├── 04-skill-agents.yaml          # k8s-debug, monitoring, security agents
+│   ├── 05-k8s-mcp-deployment.yaml    # k8s-mcp Deployment, Service, RBAC
+│   ├── 06-orchestrator.yaml          # orchestrator-agent
+│   ├── 08-cluster-admin-agent.yaml   # cluster-admin-agent
+│   └── kagent-openai.yaml            # Secret manifest (see Security Notes)
+├── debug-agents/                     # Extra debug agent / orchestrator variants
+└── examples/                         # A2A client and custom MCP server examples
 ```
 
 ## Troubleshooting
@@ -315,22 +354,24 @@ Add more capabilities:
 3. Register with RemoteMCPServer CRD
 4. Add to agent tool configurations
 
+## Security Notes
+
+- Never commit API keys. `manifests/kagent-openai.yaml` is a Secret manifest exported from a Helm release; do not store a real key in it. Create the secret from an environment variable instead (for example via the Helm `--set providers.openAI.apiKey` flag used in `setup.sh`).
+- `deploy-kagent.sh` stores your kubeconfig in the cluster as the `host-kubeconfig` secret and `cluster-admin-agent` has broad write access; use only on clusters you can afford to experiment on.
+- Rotate any key that has ever been committed.
+
 ## Resources
 
 - [Kagent Documentation](https://kagent.dev)
 - [A2A Protocol Specification](https://a2a.dev)
 - [Model Context Protocol (MCP)](https://modelcontextprotocol.io)
+- [DeepSeek API](https://api-docs.deepseek.com/)
 - [Gemini API Documentation](https://ai.google.dev/gemini-api/docs)
 
 ## License
 
-This setup is provided as-is for demonstration purposes.
+Released under the [MIT License](LICENSE).
 
-helm upgrade --install kagent oci://ghcr.io/kagent-dev/kagent/helm/kagent -n kagent \
-      --set providers.default=openAI \
-      --set providers.openAI.apiKey=$API_KEY \
-      --set providers.openAI.model=deepseek-chat \
-      --set providers.openAI.baseUrl=https://api.deepseek.com/v1
+## Author
 
-
-    
+[Umesh Khatiwada](https://github.com/umesh-khatiwada)
